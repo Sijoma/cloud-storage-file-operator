@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- csfo_v1alpha1_filetransfer.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
