@@ -1,12 +1,13 @@
 apiVersion: csfo.sijoma.dev/v1alpha1
 kind: FileTransfer
 metadata:
-  labels:
-    app.kubernetes.io/name: filetransfer
-    app.kubernetes.io/instance: filetransfer-sample
-    app.kubernetes.io/part-of: cloud-storage-file-operator
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/created-by: cloud-storage-file-operator
   name: filetransfer-sample
 spec:
-  # TODO(user): Add fields here
+  bucketName: "name-of-bucket"
+  query:
+    prefix: "your-obj-prefix"
+  copyDestination:
+    prefix: "our-dst-prefix"
+  bucketSecret:
+    name: "bucket-credentials"
+    namespace: ""

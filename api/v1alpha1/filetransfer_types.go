@@ -17,25 +17,39 @@ limitations under the License.
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FileTransferSpec defines the desired state of FileTransfer
 type FileTransferSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// BucketName is the source bucket
+	BucketName string `json:"bucketName"`
 
-	// Foo is an example field of FileTransfer. Edit filetransfer_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Query
+	Query Query `json:"query"`
+
+	// CopyDestination
+	CopyDestination *CopyDestination `json:"copyDestination,omitempty"`
+
+	// Secret
+	BucketSecret *v1.SecretReference `json:"bucketSecret,omitempty"`
+}
+
+type Query struct {
+	Prefix string `json:"prefix,omitempty"`
+}
+
+type CopyDestination struct {
+	// If a copy destination is specified, the query prefix will be replaced by the destination prefix
+	Prefix string `json:"prefix,omitempty"`
 }
 
 // FileTransferStatus defines the observed state of FileTransfer
 type FileTransferStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	FoundObjects int `json:"foundObjects"`
+	// Todo: Implement Conditions
+	CopyStatus string `json:"copyStatus"`
 }
 
 //+kubebuilder:object:root=true

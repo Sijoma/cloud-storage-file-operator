@@ -39,13 +39,50 @@ spec:
           spec:
             description: FileTransferSpec defines the desired state of FileTransfer
             properties:
-              foo:
-                description: Foo is an example field of FileTransfer. Edit filetransfer_types.go
-                  to remove/update
+              bucketName:
+                description: BucketName is the source bucket
                 type: string
+              bucketSecret:
+                description: Secret
+                properties:
+                  name:
+                    description: name is unique within a namespace to reference a
+                      secret resource.
+                    type: string
+                  namespace:
+                    description: namespace defines the space within which the secret
+                      name must be unique.
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              copyDestination:
+                description: CopyDestination
+                properties:
+                  prefix:
+                    description: If a copy destination is specified, the query prefix
+                      will be replaced by the destination prefix
+                    type: string
+                type: object
+              query:
+                description: Query
+                properties:
+                  prefix:
+                    type: string
+                type: object
+            required:
+            - bucketName
+            - query
             type: object
           status:
             description: FileTransferStatus defines the observed state of FileTransfer
+            properties:
+              copyStatus:
+                type: string
+              foundObjects:
+                type: integer
+            required:
+            - copyStatus
+            - foundObjects
             type: object
         type: object
     served: true
