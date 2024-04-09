@@ -1,9 +1,8 @@
 # cloud-storage-file-operator
-// TODO(user): Add simple overview of use/purpose
+
+Query / Copy files from GCS in a kubernetes native way. 
 
 ## Description
-
-Query / Copy files from GCS.
 
 
 Example CRD:
