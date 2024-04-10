@@ -30,3 +30,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders/status
+  verbs:
+  - get
+  - patch
+  - update

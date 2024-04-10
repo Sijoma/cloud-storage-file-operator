@@ -1,0 +1,31 @@
+# permissions for end users to edit folders.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: folder-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: cloud-storage-file-operator
+    app.kubernetes.io/part-of: cloud-storage-file-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: folder-editor-role
+rules:
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders/status
+  verbs:
+  - get

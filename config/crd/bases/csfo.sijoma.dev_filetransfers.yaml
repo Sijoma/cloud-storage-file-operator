@@ -77,6 +77,7 @@ spec:
             description: FileTransferStatus defines the observed state of FileTransfer
             properties:
               copyStatus:
+                description: 'Todo: Implement Conditions'
                 type: string
               foundObjects:
                 type: integer

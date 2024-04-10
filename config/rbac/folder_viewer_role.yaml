@@ -1,0 +1,27 @@
+# permissions for end users to view folders.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: folder-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: cloud-storage-file-operator
+    app.kubernetes.io/part-of: cloud-storage-file-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: folder-viewer-role
+rules:
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - csfo.sijoma.dev
+  resources:
+  - folders/status
+  verbs:
+  - get

@@ -1,13 +1,11 @@
 apiVersion: csfo.sijoma.dev/v1alpha1
 kind: FileTransfer
 metadata:
-  name: filetransfer-sample
+  name: new-folder-list
+  namespace: test-namespace
 spec:
-  bucketName: "name-of-bucket"
+  bucketName: my-bucket
   query:
-    prefix: "your-obj-prefix"
-  copyDestination:
-    prefix: "our-dst-prefix"
+    prefix:  my-folder-name/my-folder-namespace
   bucketSecret:
-    name: "bucket-credentials"
-    namespace: ""
+    name: folder-creds

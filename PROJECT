@@ -17,4 +17,13 @@ resources:
   kind: FileTransfer
   path: github.com/sijoma/cloud-storage-file-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: sijoma.dev
+  group: csfo
+  kind: Folder
+  path: github.com/sijoma/cloud-storage-file-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

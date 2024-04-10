@@ -21,7 +21,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/option"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,6 +29,7 @@ import (
 
 	csfov1alpha1 "github.com/sijoma/cloud-storage-file-operator/api/v1alpha1"
 	"github.com/sijoma/cloud-storage-file-operator/pkg/gcs"
+	"github.com/sijoma/cloud-storage-file-operator/pkg/retrievers"
 )
 
 // FileTransferReconciler reconciles a FileTransfer object
@@ -63,27 +63,15 @@ func (r *FileTransferReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	var extraOpts []option.ClientOption
 
 	if fileTransferCR.Spec.BucketSecret != nil {
-		var jsonKey []byte
-		var bucketSecret v1.Secret
-		namespaceKey := fileTransferCR.Spec.BucketSecret.Namespace
-		if namespaceKey == "" {
-			namespaceKey = fileTransferCR.Namespace
+		namespace := fileTransferCR.Namespace
+		if fileTransferCR.Spec.BucketSecret.Namespace != "" {
+			namespace = fileTransferCR.Spec.BucketSecret.Namespace
 		}
-
-		err := r.Get(
-			ctx,
-			types.NamespacedName{Namespace: namespaceKey, Name: fileTransferCR.Spec.BucketSecret.Name},
-			&bucketSecret,
-		)
+		credentials, err := retrievers.Credentials(r.Client, ctx, types.NamespacedName{Name: fileTransferCR.Spec.BucketSecret.Name, Namespace: namespace})
 		if err != nil {
-			logger.Error(err, "unable to extract bucket secret")
 			return ctrl.Result{}, err
 		}
-		jsonKey = bucketSecret.Data["service_account_private_key"]
-		if jsonKey != nil {
-			logger.Info("adding json to gcs")
-			extraOpts = append(extraOpts, option.WithCredentialsJSON(jsonKey))
-		}
+		extraOpts = append(extraOpts, credentials)
 	}
 
 	// Gcs client takes a context... lets see whether we can put it on the reconciler later
@@ -119,6 +107,8 @@ func (r *FileTransferReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if fileTransferCR.Status.FoundObjects != len(objects) {
 		fileTransferCR.Status.FoundObjects = len(objects)
 		logger.Info("found objects", "objectsFound", len(objects))
+		// This will list all files including folders
+		logger.Info("objects found", "objectsFound", objects)
 		err = r.Status().Update(ctx, fileTransferCR)
 		if err != nil {
 			logger.Error(err, "failed to update status")
