@@ -40,9 +40,15 @@ spec:
             description: FolderSpec defines the desired state of Folder
             properties:
               bucketName:
+                description: The parent bucket of the managed folder.
+                type: string
+              name:
+                description: The name of the managed folder, expressed as a path.
+                  For example, example-dir or example-dir/example-dir1.
                 type: string
             required:
             - bucketName
+            - name
             type: object
           status:
             description: FolderStatus defines the observed state of Folder

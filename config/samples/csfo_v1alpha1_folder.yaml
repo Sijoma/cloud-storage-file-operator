@@ -1,7 +1,7 @@
 apiVersion: csfo.sijoma.dev/v1alpha1
 kind: Folder
 metadata:
-#   will be used for final folder path: <CRName>/<Namespace>/
   name: my-folder-name
 spec:
   bucketName: my-bucket-name
+  name: my-folder/is-super/nested/indeed

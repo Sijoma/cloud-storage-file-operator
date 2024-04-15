@@ -8,6 +8,8 @@ import (
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/option"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	"github.com/sijoma/cloud-storage-file-operator/pkg/gcp/gcs"
 )
 
 type Client struct {
@@ -17,7 +19,7 @@ type Client struct {
 	projectID string
 	// Custom client for ManagedFolders (no official support in storage client)
 	// https://cloud.google.com/storage/docs/access-control/using-iam-permissions#managed-folder-iam
-	folderService *jsonFolderClient
+	folderService *gcs.ManagedFolderClient
 }
 
 func (p Client) ProjectID() string {
@@ -35,7 +37,7 @@ func NewGCPClient(ctx context.Context, gcpProjectID string, opts ...option.Clien
 		return nil, fmt.Errorf("NewGCPClient: %w", err)
 	}
 
-	folderService, err := newFolderClient(ctx)
+	folderService, err := gcs.NewFolderClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("NewGCPClient: %w", err)
 	}
@@ -70,17 +72,17 @@ func (p Client) CreateServiceAccount(ctx context.Context, saName, kubernetesSA, 
 	return account, nil
 }
 
-func (p Client) CreateManagedFolder(ctx context.Context, prefix, bucketName string) (string, error) {
-	folder, err := p.folderService.getOrCreateManagedFolder(ctx, prefix, bucketName)
+func (p Client) CreateManagedFolder(ctx context.Context, folder, bucketName string) (string, error) {
+	createdFolder, err := p.folderService.GetOrCreateManagedFolder(ctx, folder, bucketName)
 	if err != nil {
 		return "", fmt.Errorf("CreateManagedFolder: %w", err)
 	}
 
-	return folder, nil
+	return createdFolder, nil
 }
 
 func (p Client) GrantRoleOnFolder(ctx context.Context, folder, bucketName, role, principal string) error {
-	err := p.folderService.addIAMBinding(ctx, folder, bucketName, role, principal)
+	err := p.folderService.AddIAMBinding(ctx, folder, bucketName, role, principal)
 	if err != nil {
 		return fmt.Errorf("GrantRoleOnFolder: %w", err)
 	}

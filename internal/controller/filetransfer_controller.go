@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	csfov1alpha1 "github.com/sijoma/cloud-storage-file-operator/api/v1alpha1"
-	"github.com/sijoma/cloud-storage-file-operator/pkg/gcs"
+	"github.com/sijoma/cloud-storage-file-operator/pkg/gcp/gcs"
 	"github.com/sijoma/cloud-storage-file-operator/pkg/retrievers"
 )
 

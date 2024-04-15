@@ -1,4 +1,4 @@
-package gcp
+package gcs
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 	"google.golang.org/api/iam/v1"
 )
 
-type jsonFolderClient struct {
+type ManagedFolderClient struct {
 	client   *http.Client
 	endpoint string
 }
@@ -23,7 +23,7 @@ type jsonFolderClient struct {
 // managedFolderEndpointFormat contains %s to insert the BucketName
 const managedFolderEndpointFormat = "https://storage.googleapis.com/storage/v1/b/%s/managedFolders"
 
-func newFolderClient(ctx context.Context) (*jsonFolderClient, error) {
+func NewFolderClient(ctx context.Context) (*ManagedFolderClient, error) {
 	// Todo: When do we need other scopes?
 	scopes := []string{}
 	httpClient, err := google.DefaultClient(ctx, scopes...)
@@ -31,13 +31,13 @@ func newFolderClient(ctx context.Context) (*jsonFolderClient, error) {
 		return nil, fmt.Errorf("newFolderClient: %w", err)
 	}
 
-	return &jsonFolderClient{
+	return &ManagedFolderClient{
 		client:   httpClient,
 		endpoint: managedFolderEndpointFormat,
 	}, nil
 }
 
-func (c *jsonFolderClient) listManagedFolders(prefix, bucketName string) (string, error) {
+func (c *ManagedFolderClient) listManagedFolders(folder, bucketName string) (string, error) {
 	req, err := c.client.Get(fmt.Sprintf(c.endpoint, bucketName))
 	if req != nil {
 		defer req.Body.Close()
@@ -96,9 +96,9 @@ func (n *notFoundError) Error() string {
 	return fmt.Sprintf("folder %s not found", n.folderName)
 }
 
-func (c *jsonFolderClient) getManagedFolder(ctx context.Context, prefix string, bucketName string) (*managedFolderResource, error) {
+func (c *ManagedFolderClient) getManagedFolder(ctx context.Context, folder string, bucketName string) (*managedFolderResource, error) {
 	endpoint := fmt.Sprintf(c.endpoint, bucketName)
-	endpoint = endpoint + "/" + url.PathEscape(prefix)
+	endpoint = endpoint + "/" + url.PathEscape(folder)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("getManagedFolder: %w", err)
@@ -111,7 +111,7 @@ func (c *jsonFolderClient) getManagedFolder(ctx context.Context, prefix string, 
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, &notFoundError{prefix}
+		return nil, &notFoundError{folder}
 	}
 
 	if resp.StatusCode >= 300 {
@@ -131,9 +131,9 @@ func (c *jsonFolderClient) getManagedFolder(ctx context.Context, prefix string, 
 	return &managedFolder, nil
 }
 
-func (c *jsonFolderClient) createManagedFolder(ctx context.Context, prefix, bucketName string) (*managedFolderResource, error) {
-	folder := managedFolderRequest{Name: prefix}
-	body, err := json.Marshal(folder)
+func (c *ManagedFolderClient) createManagedFolder(ctx context.Context, folder, bucketName string) (*managedFolderResource, error) {
+	requestFolder := managedFolderRequest{Name: folder}
+	body, err := json.Marshal(requestFolder)
 	if err != nil {
 		return nil, fmt.Errorf("createManagedFolder: %w", err)
 	}
@@ -168,13 +168,17 @@ func (c *jsonFolderClient) createManagedFolder(ctx context.Context, prefix, buck
 	return &managedFolder, nil
 }
 
-func (c *jsonFolderClient) getOrCreateManagedFolder(ctx context.Context, prefix string, bucketName string) (string, error) {
-	folder, err := c.getManagedFolder(ctx, prefix, bucketName)
+// GetOrCreateManagedFolder tries to get the managedFolder, if not found it creates the desired folder
+//
+// Get: https://cloud.google.com/storage/docs/json_api/v1/managedFolder/get
+// Insert: https://cloud.google.com/storage/docs/json_api/v1/managedFolder/insert
+func (c *ManagedFolderClient) GetOrCreateManagedFolder(ctx context.Context, folder string, bucketName string) (string, error) {
+	managedFolder, err := c.getManagedFolder(ctx, folder, bucketName)
 	if err != nil {
 		var notFoundErr *notFoundError
 		switch {
 		case errors.As(err, &notFoundErr):
-			createdFolder, err := c.createManagedFolder(ctx, prefix, bucketName)
+			createdFolder, err := c.createManagedFolder(ctx, folder, bucketName)
 			if err != nil {
 				return "", fmt.Errorf("getOrCreateManagedFolder: %w", err)
 			}
@@ -184,10 +188,10 @@ func (c *jsonFolderClient) getOrCreateManagedFolder(ctx context.Context, prefix 
 		}
 	}
 
-	return folder.Name, nil
+	return managedFolder.Name, nil
 }
 
-func (c *jsonFolderClient) getIAMPolicy(ctx context.Context, folder, bucketName string) (*iam.Policy, error) {
+func (c *ManagedFolderClient) getIAMPolicy(ctx context.Context, folder, bucketName string) (*iam.Policy, error) {
 	endpoint := fmt.Sprintf(c.endpoint, bucketName)
 	endpoint += "/" + url.PathEscape(folder) + "/iam"
 
@@ -215,7 +219,7 @@ func (c *jsonFolderClient) getIAMPolicy(ctx context.Context, folder, bucketName 
 	return &iamPolicy, nil
 }
 
-func (c *jsonFolderClient) setIAMPolicy(ctx context.Context, folder, bucketName string, policy iam.Policy) error {
+func (c *ManagedFolderClient) setIAMPolicy(ctx context.Context, folder, bucketName string, policy iam.Policy) error {
 	endpoint := fmt.Sprintf(c.endpoint, bucketName)
 	endpoint += "/" + url.PathEscape(folder) + "/iam"
 
@@ -242,7 +246,11 @@ func (c *jsonFolderClient) setIAMPolicy(ctx context.Context, folder, bucketName 
 	return nil
 }
 
-func (c *jsonFolderClient) addIAMBinding(ctx context.Context, folder, bucketName, role, principal string) error {
+// AddIAMBinding retrieves the current IAM Policy for the folder and adds a binding for the principal on the desired role
+//
+// getIamPolicy: https://cloud.google.com/storage/docs/json_api/v1/managedFolder/getIamPolicy
+// setIamPolicy: https://cloud.google.com/storage/docs/json_api/v1/managedFolder/setIamPolicy
+func (c *ManagedFolderClient) AddIAMBinding(ctx context.Context, folder, bucketName, role, principal string) error {
 	iamPolicy, err := c.getIAMPolicy(ctx, folder, bucketName)
 	if err != nil {
 		return err

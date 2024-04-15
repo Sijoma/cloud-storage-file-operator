@@ -20,12 +20,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FolderSpec defines the desired state of Folder
 type FolderSpec struct {
+	// The parent bucket of the managed folder.
 	BucketName string `json:"bucketName"`
+
+	// The name of the managed folder, expressed as a path. For example, example-dir or example-dir/example-dir1.
+	Name string `json:"name"`
 }
 
 // FolderStatus defines the observed state of Folder

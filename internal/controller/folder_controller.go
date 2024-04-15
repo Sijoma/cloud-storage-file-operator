@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,6 +42,8 @@ type FolderReconciler struct {
 //+kubebuilder:rbac:groups=csfo.sijoma.dev,resources=folders/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=csfo.sijoma.dev,resources=folders/finalizers,verbs=update
 
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.0/pkg/reconcile
 func (r *FolderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -60,7 +63,7 @@ func (r *FolderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	folder, err := r.gcpClient.CreateManagedFolder(
 		ctx,
-		folderCR.Name+"/"+folderCR.Namespace+"/",
+		folderCR.Spec.Name,
 		folderCR.Spec.BucketName,
 	)
 	if err != nil {
@@ -122,5 +125,6 @@ func (r *FolderReconciler) SetupWithManager(mgr ctrl.Manager, gcpProjectID strin
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&csfov1alpha1.Folder{}).
+		Owns(&corev1.ServiceAccount{}).
 		Complete(r)
 }
