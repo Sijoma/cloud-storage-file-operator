@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/storage v1.40.0
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.19.0
 	google.golang.org/api v0.172.0
 	k8s.io/api v0.29.3
 	k8s.io/apimachinery v0.29.3
