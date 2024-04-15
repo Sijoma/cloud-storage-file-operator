@@ -13,7 +13,7 @@ additionally it is possible to copy the files inside the same bucket.
 
 This creates the following:
 1. A [ManagedFolder](https://cloud.google.com/storage/docs/managed-folders) inside a GCS bucket
-2. A service account in the project (operator needs to be authenticated with credentials)
+2. A service account in the project (operator needs `storageAdmin` permissions by WIF/Credentials)
 3. This service account gets the role `roles/iam.workloadIdentityUser` 
 4. This service account gets permissions on the ManagedFolder
 5. A Kubernetes service account is created with the corresponding `iam.gke.io/gcp-service-account` annotation
