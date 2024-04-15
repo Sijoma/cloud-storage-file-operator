@@ -4,7 +4,31 @@ Query / Copy files from GCS in a kubernetes native way.
 
 ## Description
 
+With a lot of dynamic namespaces inside a Kubernetes cluster, it can be hard to configure these to 
+use [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation).
+This operator aims to solve this problem with a FolderCRD. The FileTransferCRD allows to query any given path inside GCS,
+additionally it is possible to copy the files inside the same bucket.
 
+### Folder CRD
+
+This creates the following:
+1. A [ManagedFolder](https://cloud.google.com/storage/docs/managed-folders) inside a GCS bucket
+2. A service account in the project (operator needs to be authenticated with credentials)
+3. This service account gets the role `roles/iam.workloadIdentityUser` 
+4. This service account gets permissions on the ManagedFolder
+5. A Kubernetes service account is created with the corresponding `iam.gke.io/gcp-service-account` annotation
+
+```yaml
+apiVersion: csfo.sijoma.dev/v1alpha1
+kind: Folder
+metadata:
+    name: my-k8s-name
+spec:
+    bucketName: my-bucket-name
+    name: my-folder/is-super/nested/indeed
+```
+
+### FileTransfer CRD
 Example CRD:
 ```yaml
 apiVersion: csfo.sijoma.dev/v1alpha1
