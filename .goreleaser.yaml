@@ -17,7 +17,7 @@ dockers:
   - id: csfo-operator
     ids:
       - csfo-operator
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.GoReleaser
     build_flag_templates:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
