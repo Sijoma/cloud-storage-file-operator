@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/storage v1.40.0
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
-	golang.org/x/oauth2 v0.19.0
+	golang.org/x/oauth2 v0.23.0
 	google.golang.org/api v0.172.0
 	k8s.io/api v0.29.3
 	k8s.io/apimachinery v0.29.3
@@ -18,7 +18,7 @@ require (
 require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
